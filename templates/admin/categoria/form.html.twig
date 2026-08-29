@@ -1,0 +1,17 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block title %}{{ categoria.id ? 'Modifica categoria' : 'Nuova categoria' }} - UtensilBen{% endblock %}
+
+{% block admin_body %}
+    <div class="ub-admin__header">
+        <h1>{{ categoria.id ? 'Modifica categoria' : 'Nuova categoria' }}</h1>
+    </div>
+
+    {{ form_start(form, {attr: {class: 'ub-form'}}) }}
+        {{ form_widget(form) }}
+        <div class="ub-form__actions">
+            <button type="submit" class="ub-btn ub-btn--primary">Salva</button>
+            <a href="{{ path('admin_categoria_index') }}" class="ub-btn">Annulla</a>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

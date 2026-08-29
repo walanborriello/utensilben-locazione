@@ -1,0 +1,70 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block title %}Prodotti - UtensilBen{% endblock %}
+
+{% block admin_body %}
+    <div class="ub-admin__header">
+        <h1>Prodotti</h1>
+        <a href="{{ path('admin_materiale_new') }}" class="ub-btn ub-btn--primary">+ Nuovo prodotto</a>
+    </div>
+
+    <div class="ub-disclaimer">
+        Qui gestisci l'anagrafica dei prodotti: codice articolo, nome, descrizione, categoria, stato attivo/non attivo e le posizioni sullo scaffale. Apri "Modifica" su un prodotto per assegnargli una o più posizioni.
+    </div>
+
+    <form method="get" class="ub-filters">
+        <input type="text" name="q" value="{{ q }}" placeholder="Cerca per nome o codice...">
+        <select name="categoria">
+            <option value="">Tutte le categorie</option>
+            {% for categoria in categorie %}
+                <option value="{{ categoria.id }}" {{ categoriaId == categoria.id ? 'selected' }}>{{ categoria.nome }}</option>
+            {% endfor %}
+        </select>
+        <select name="attivo">
+            <option value="">Attivi e non attivi</option>
+            <option value="1" {{ attivoParam == '1' ? 'selected' }}>Solo attivi</option>
+            <option value="0" {{ attivoParam == '0' ? 'selected' }}>Solo non attivi</option>
+        </select>
+        <button type="submit" class="ub-btn">Filtra</button>
+        {% if q or categoriaId or attivoParam %}<a href="{{ path('admin_materiale_index') }}" class="ub-btn ub-btn--small">Azzera</a>{% endif %}
+    </form>
+
+    {% if materiali is empty %}
+        <div class="ub-empty-state">Nessun prodotto trovato.</div>
+    {% else %}
+        <div class="ub-cards" data-ub-paginazione data-per-pagina="5" data-per-pagina-desktop="6">
+            {% for materiale in materiali %}
+                <div class="ub-card" data-ub-paginazione-item>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Codice</span>
+                        <span class="ub-card__value">{{ materiale.codice }}</span>
+                    </div>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Nome</span>
+                        <span class="ub-card__value">{{ materiale.nome }}</span>
+                    </div>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Categoria</span>
+                        <span class="ub-card__value">{{ materiale.categoria ? materiale.categoria.nome : '—' }}</span>
+                    </div>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Posizioni</span>
+                        <span class="ub-card__value">{{ materiale.posizionamenti|length > 0 ? materiale.posizionamenti|length ~ ' posizione/i' : 'nessuna posizione' }}</span>
+                    </div>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Attivo</span>
+                        <span class="ub-card__value">{{ materiale.attivo ? 'Sì' : 'No' }}</span>
+                    </div>
+                    <div class="ub-card__actions">
+                        <a href="{{ path('admin_materiale_edit', {id: materiale.id}) }}" class="ub-btn ub-btn--small">Modifica</a>
+                        <form method="post" action="{{ path('admin_materiale_delete', {id: materiale.id}) }}" onsubmit="return confirm('Eliminare questo prodotto?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete-materiale-' ~ materiale.id) }}">
+                            <button type="submit" class="ub-btn ub-btn--small ub-btn--danger">Elimina</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="ub-paginazione__controlli" data-ub-paginazione-controlli></div>
+        </div>
+    {% endif %}
+{% endblock %}

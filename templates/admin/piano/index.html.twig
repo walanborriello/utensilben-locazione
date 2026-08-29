@@ -1,0 +1,57 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block title %}Piani - UtensilBen{% endblock %}
+
+{% block admin_body %}
+    <div class="ub-admin__header">
+        <h1>Piani</h1>
+        <a href="{{ path('admin_piano_new') }}" class="ub-btn ub-btn--primary">+ Nuovo piano</a>
+    </div>
+
+    <div class="ub-disclaimer">
+        I piani sono i singoli ripiani fisici all'interno di un'area (lato) di una fila: sono il livello più dettagliato della struttura a scaffale. Per crearne uno scegli prima l'area (fila + lato), poi assegna un numero progressivo; l'etichetta è facoltativa (es. "Piano terra").
+    </div>
+
+    <form method="get" class="ub-filters">
+        <input type="text" name="q" value="{{ q }}" placeholder="Cerca per fila o etichetta...">
+        <select name="fila">
+            <option value="">Tutte le file</option>
+            {% for fila in file %}
+                <option value="{{ fila.id }}" {{ filaId == fila.id ? 'selected' }}>{{ fila.codice }} — {{ fila.nome }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="ub-btn">Filtra</button>
+        {% if q or filaId %}<a href="{{ path('admin_piano_index') }}" class="ub-btn ub-btn--small">Azzera</a>{% endif %}
+    </form>
+
+    {% if piani is empty %}
+        <div class="ub-empty-state">Nessun piano trovato.</div>
+    {% else %}
+        <div class="ub-cards" data-ub-paginazione data-per-pagina="5" data-per-pagina-desktop="6">
+            {% for piano in piani %}
+                <div class="ub-card" data-ub-paginazione-item>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Area</span>
+                        <span class="ub-card__value">{{ piano.area }}</span>
+                    </div>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Numero</span>
+                        <span class="ub-card__value">{{ piano.numero }}</span>
+                    </div>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Etichetta</span>
+                        <span class="ub-card__value">{{ piano.etichetta|default('—') }}</span>
+                    </div>
+                    <div class="ub-card__actions">
+                        <a href="{{ path('admin_piano_edit', {id: piano.id}) }}" class="ub-btn ub-btn--small">Modifica</a>
+                        <form method="post" action="{{ path('admin_piano_delete', {id: piano.id}) }}" onsubmit="return confirm('Eliminare questo piano?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete-piano-' ~ piano.id) }}">
+                            <button type="submit" class="ub-btn ub-btn--small ub-btn--danger">Elimina</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="ub-paginazione__controlli" data-ub-paginazione-controlli></div>
+        </div>
+    {% endif %}
+{% endblock %}

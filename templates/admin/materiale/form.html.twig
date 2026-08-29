@@ -1,0 +1,42 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block title %}{{ materiale.id ? 'Modifica prodotto' : 'Nuovo prodotto' }} - UtensilBen{% endblock %}
+
+{% block admin_body %}
+    <div class="ub-admin__header">
+        <h1>{{ materiale.id ? 'Modifica prodotto' : 'Nuovo prodotto' }}</h1>
+    </div>
+
+    {{ form_start(form, {attr: {class: 'ub-form'}}) }}
+        {{ form_row(form.codice) }}
+        {{ form_row(form.nome) }}
+        {{ form_row(form.descrizione) }}
+        {{ form_row(form.categoria) }}
+        {{ form_row(form.unitaMisura) }}
+        {{ form_row(form.attivo) }}
+
+        <h2 class="ub-form__sezione-titolo">Posizioni sullo scaffale</h2>
+        <p class="ub-form__sezione-hint">
+            Un prodotto può avere più posizioni (es. scorta divisa su più file): spunta "principale" su una sola riga, sarà quella mostrata per prima nella ricerca sul sito pubblico.
+        </p>
+
+        <div class="ub-collezione" data-collezione-wrapper data-prototipo="{{ form_widget(form.posizionamenti.vars.prototype)|e('html_attr') }}" data-indice="{{ form.posizionamenti|length }}">
+            <div data-collezione-lista>
+                {% for posizioneForm in form.posizionamenti %}
+                    <div class="ub-posizione-riga" data-collezione-riga>
+                        {{ form_widget(posizioneForm) }}
+                        <button type="button" class="ub-btn ub-btn--small ub-btn--danger" data-collezione-rimuovi>Rimuovi</button>
+                    </div>
+                {% else %}
+                    <p class="ub-collezione__vuota" data-collezione-vuota>Nessuna posizione assegnata.</p>
+                {% endfor %}
+            </div>
+            <button type="button" class="ub-btn ub-btn--small" data-collezione-aggiungi>+ Aggiungi posizione</button>
+        </div>
+
+        <div class="ub-form__actions">
+            <button type="submit" class="ub-btn ub-btn--primary">Salva</button>
+            <a href="{{ path('admin_materiale_index') }}" class="ub-btn">Annulla</a>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% set current_route = app.request.attributes.get('_route') %}
+    <div class="ub-admin">
+        <aside class="ub-admin__nav">
+            <a href="{{ path('admin_dashboard') }}" class="ub-admin__nav-title">Gestione</a>
+            <a href="{{ path('admin_categoria_index') }}" class="{{ current_route starts with 'admin_categoria_' ? 'is-active' }}">Categorie</a>
+            <a href="{{ path('admin_fila_index') }}" class="{{ current_route starts with 'admin_fila_' ? 'is-active' }}">File</a>
+            <a href="{{ path('admin_piano_index') }}" class="{{ current_route starts with 'admin_piano_' ? 'is-active' }}">Piani</a>
+            <a href="{{ path('admin_materiale_index') }}" class="{{ current_route starts with 'admin_materiale_' ? 'is-active' }}">Prodotti</a>
+            <a href="{{ path('admin_materiali_senza_posizione') }}" class="{{ current_route == 'admin_materiali_senza_posizione' ? 'is-active' }}">Senza posizione</a>
+        </aside>
+        <div class="ub-admin__content">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="ub-flash ub-flash--{{ label }}">{{ message }}</div>
+                {% endfor %}
+            {% endfor %}
+            {% block admin_body %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}

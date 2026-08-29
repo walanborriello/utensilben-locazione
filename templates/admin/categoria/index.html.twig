@@ -1,0 +1,43 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block title %}Categorie - UtensilBen{% endblock %}
+
+{% block admin_body %}
+    <div class="ub-admin__header">
+        <h1>Categorie</h1>
+        <a href="{{ path('admin_categoria_new') }}" class="ub-btn ub-btn--primary">+ Nuova categoria</a>
+    </div>
+
+    <div class="ub-disclaimer">
+        Le categorie raggruppano i materiali (es. "Utensili elettrici", "Viteria") e sono facoltative: servono a organizzare l'anagrafica e a filtrare più facilmente i materiali. Eliminare una categoria non cancella i materiali collegati: li lascia semplicemente senza categoria.
+    </div>
+
+    <form method="get" class="ub-filters">
+        <input type="text" name="q" value="{{ q }}" placeholder="Cerca per nome...">
+        <button type="submit" class="ub-btn">Filtra</button>
+        {% if q %}<a href="{{ path('admin_categoria_index') }}" class="ub-btn ub-btn--small">Azzera</a>{% endif %}
+    </form>
+
+    {% if categorie is empty %}
+        <div class="ub-empty-state">Nessuna categoria trovata.</div>
+    {% else %}
+        <div class="ub-cards" data-ub-paginazione data-per-pagina="5" data-per-pagina-desktop="6">
+            {% for categoria in categorie %}
+                <div class="ub-card" data-ub-paginazione-item>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Nome</span>
+                        <span class="ub-card__value">{{ categoria.nome }}</span>
+                    </div>
+                    <div class="ub-card__actions">
+                        <a href="{{ path('admin_categoria_edit', {id: categoria.id}) }}" class="ub-btn ub-btn--small">Modifica</a>
+                        <form method="post" action="{{ path('admin_categoria_delete', {id: categoria.id}) }}" onsubmit="return confirm('Eliminare questa categoria?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete-categoria-' ~ categoria.id) }}">
+                            <button type="submit" class="ub-btn ub-btn--small ub-btn--danger">Elimina</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="ub-paginazione__controlli" data-ub-paginazione-controlli></div>
+        </div>
+    {% endif %}
+{% endblock %}

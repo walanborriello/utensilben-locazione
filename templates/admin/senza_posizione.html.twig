@@ -1,0 +1,38 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block title %}Prodotti senza posizione - UtensilBen{% endblock %}
+
+{% block admin_body %}
+    <h1>Prodotti senza posizione</h1>
+
+    <div class="ub-disclaimer">
+        Prodotti attivi (tipicamente appena importati o inseriti a mano) a cui non è ancora stata assegnata una posizione fisica sullo scaffale. Apri "Modifica" su un prodotto per assegnargli dove si trova.
+    </div>
+
+    {% if materiali is empty %}
+        <div class="ub-empty-state">Nessun prodotto in attesa di posizionamento. 🎉</div>
+    {% else %}
+        <div class="ub-cards" data-ub-paginazione data-per-pagina="5" data-per-pagina-desktop="6">
+            {% for materiale in materiali %}
+                <div class="ub-card" data-ub-paginazione-item>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Codice</span>
+                        <span class="ub-card__value">{{ materiale.codice }}</span>
+                    </div>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Nome</span>
+                        <span class="ub-card__value">{{ materiale.nome }}</span>
+                    </div>
+                    <div class="ub-card__row">
+                        <span class="ub-card__label">Categoria</span>
+                        <span class="ub-card__value">{{ materiale.categoria ? materiale.categoria.nome : '—' }}</span>
+                    </div>
+                    <div class="ub-card__actions">
+                        <a href="{{ path('admin_materiale_edit', {id: materiale.id}) }}" class="ub-btn ub-btn--small">Modifica</a>
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="ub-paginazione__controlli" data-ub-paginazione-controlli></div>
+        </div>
+    {% endif %}
+{% endblock %}

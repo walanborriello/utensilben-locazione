@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="ub-hero">
+        <h1>Dove si trova questo materiale?</h1>
+        <p class="ub-subtitle">Cerca per nome o codice articolo</p>
+
+        <div class="ub-search">
+            <input
+                type="text"
+                class="ub-search__input"
+                placeholder="Es. martello o UT-101…"
+                autocomplete="off"
+                data-ub-search-input
+            >
+            <div class="ub-search__results" data-ub-search-results hidden></div>
+        </div>
+
+        <p class="ub-hero__hint">Seleziona un risultato per vedere subito fila, area e piano sullo schema dello scaffale.</p>
+    </div>
+
+    <div class="ub-modal-overlay" data-ub-modal-overlay hidden>
+        <div class="ub-modal" role="dialog" aria-modal="true">
+            <div class="ub-modal__header">
+                <div>
+                    <h2 class="ub-modal__titolo" data-ub-modal-titolo></h2>
+                    <span class="ub-modal__codice" data-ub-modal-codice></span>
+                </div>
+                <button type="button" class="ub-modal__chiudi" data-ub-modal-chiudi aria-label="Chiudi">✕</button>
+            </div>
+            <div class="ub-modal__body">
+                <div class="ub-breadcrumb" data-ub-modal-label></div>
+                <div class="ub-scaffale" data-ub-modal-scaffale></div>
+
+                <div class="ub-altre-posizioni" data-ub-modal-altre hidden>
+                    <p class="ub-altre-posizioni__titolo">Altre posizioni di questo materiale</p>
+                    <div class="ub-altre-posizioni__lista" data-ub-modal-altre-lista></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

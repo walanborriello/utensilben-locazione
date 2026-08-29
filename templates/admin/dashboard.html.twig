@@ -1,0 +1,81 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block title %}Gestione - UtensilBen{% endblock %}
+
+{% block admin_body %}
+    <h1>Gestione</h1>
+    <div class="ub-disclaimer">
+        Da qui gestisci tutta la struttura del magazzino e il catalogo prodotti. Scegli una sezione dal menu a sinistra: <strong>Categorie</strong> (raggruppano i prodotti), <strong>File</strong> e <strong>Piani</strong> (la struttura fisica degli scaffali) e <strong>Prodotti</strong> (anagrafica e posizioni sullo scaffale, tutto nello stesso form). Sotto trovi una fotografia rapida della situazione attuale.
+    </div>
+
+    <div class="ub-stats">
+        <div class="ub-stat-card">
+            <div class="ub-stat-card__valore">{{ totaleMateriali }}</div>
+            <div class="ub-stat-card__etichetta">Prodotti totali</div>
+        </div>
+        <div class="ub-stat-card">
+            <div class="ub-stat-card__valore">{{ materialiAttivi }}</div>
+            <div class="ub-stat-card__etichetta">Prodotti attivi</div>
+        </div>
+        <div class="ub-stat-card {{ materialiSenzaPosizione > 0 ? 'ub-stat-card--attenzione' }}">
+            <div class="ub-stat-card__valore">{{ materialiSenzaPosizione }}</div>
+            <div class="ub-stat-card__etichetta">Senza posizione</div>
+        </div>
+        <div class="ub-stat-card">
+            <div class="ub-stat-card__valore">{{ totaleFile }}</div>
+            <div class="ub-stat-card__etichetta">File</div>
+        </div>
+        <div class="ub-stat-card">
+            <div class="ub-stat-card__valore">{{ totalePiani }}</div>
+            <div class="ub-stat-card__etichetta">Piani</div>
+        </div>
+        <div class="ub-stat-card">
+            <div class="ub-stat-card__valore">{{ totaleCategorie }}</div>
+            <div class="ub-stat-card__etichetta">Categorie</div>
+        </div>
+    </div>
+
+    <div class="ub-report-grid">
+        <div class="ub-report-card">
+            <h2>Prodotti posizionati per fila</h2>
+            <p class="ub-report-card__sottotitolo">Quanti prodotti (attivi) sono collocati su ciascuna fila dello scaffale.</p>
+
+            {% if materialiPerFila is empty %}
+                <div class="ub-empty-state">Nessun prodotto ancora posizionato.</div>
+            {% else %}
+                <div class="ub-bars">
+                    {% for riga in materialiPerFila %}
+                        <div class="ub-bar-row">
+                            <span class="ub-bar-row__etichetta">{{ riga.fila.codice }} — {{ riga.fila.nome }}</span>
+                            <div class="ub-bar-row__traccia">
+                                <div class="ub-bar-row__barra" style="width: {{ massimoPerFila > 0 ? (riga.totale / massimoPerFila * 100) : 0 }}%"></div>
+                            </div>
+                            <span class="ub-bar-row__valore">{{ riga.totale }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="ub-report-card ub-report-card--centrato">
+            <h2>Prodotti posizionati</h2>
+            <p class="ub-report-card__sottotitolo">Percentuale di prodotti attivi che hanno già una posizione sullo scaffale.</p>
+
+            <div class="ub-donut">
+                <svg viewBox="0 0 120 120">
+                    <circle class="ub-donut__sfondo" cx="60" cy="60" r="54"></circle>
+                    <circle class="ub-donut__valore" cx="60" cy="60" r="54"
+                            stroke-dasharray="{{ (percentualePosizionati / 100 * 339.292)|round(1) }} 339.292"></circle>
+                </svg>
+                <div class="ub-donut__testo">
+                    <span class="ub-donut__percentuale">{{ percentualePosizionati }}%</span>
+                    <span class="ub-donut__dettaglio">{{ materialiPosizionati }} di {{ materialiAttivi }}</span>
+                </div>
+            </div>
+
+            {% if materialiSenzaPosizione > 0 %}
+                <a href="{{ path('admin_materiali_senza_posizione') }}" class="ub-btn ub-btn--small">Vedi i {{ materialiSenzaPosizione }} prodotti senza posizione</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

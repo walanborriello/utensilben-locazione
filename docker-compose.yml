@@ -1,0 +1,61 @@
+services:
+    php:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+        volumes:
+            - ./:/var/www/html
+            # Il codice dell'app viene montato dall'host (per sviluppare "a
+            # caldo"), ma vendor/ e var/ restano quelli generati dentro
+            # l'immagine durante la build: senza questi due volumi separati,
+            # il mount dell'intera cartella del progetto (che su un host
+            # Windows non ha vendor/) nasconderebbe le dipendenze installate.
+            - ub_vendor:/var/www/html/vendor
+            - /var/www/html/var
+        environment:
+            APP_ENV: dev
+        depends_on:
+            database:
+                condition: service_healthy
+
+    nginx:
+        image: nginx:1.27-alpine
+        ports:
+            # Porta 80 cosi' si naviga su http://locazione.utensilben.local
+            # senza indicare la porta. Se sul PC la porta 80 e' gia' usata da
+            # un altro programma, cambia qui in "8080:80" e visita
+            # http://locazione.utensilben.local:8080
+            - "80:80"
+        volumes:
+            - ./public:/var/www/html/public:ro
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+        depends_on:
+            - php
+
+    database:
+        image: mysql:8.4
+        environment:
+            MYSQL_DATABASE: utensilben
+            MYSQL_USER: utensilben
+            MYSQL_PASSWORD: utensilben
+            MYSQL_ROOT_PASSWORD: root
+        volumes:
+            - ub_db_data:/var/lib/mysql
+        ports:
+            - "3306:3306"
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    adminer:
+        image: adminer
+        ports:
+            - "8081:8080"
+        depends_on:
+            - database
+
+volumes:
+    ub_db_data:
+    ub_vendor:
