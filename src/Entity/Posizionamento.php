@@ -3,11 +3,10 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'posizionamento')]
-#[ORM\UniqueConstraint(name: 'uniq_posizionamento_materiale_piano', columns: ['materiale_id', 'piano_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_posizionamento_materiale_ripiano', columns: ['materiale_id', 'ripiano_id'])]
 class Posizionamento
 {
     #[ORM\Id]
@@ -19,28 +18,19 @@ class Posizionamento
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Materiale $materiale = null;
 
-    #[ORM\ManyToOne(targetEntity: Piano::class, inversedBy: 'posizionamenti')]
+    #[ORM\ManyToOne(targetEntity: Ripiano::class, inversedBy: 'posizionamenti')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?Piano $piano = null;
+    private ?Ripiano $ripiano = null;
 
     #[ORM\Column]
     private bool $principale = false;
-
-    /**
-     * Sezione orizzontale del piano in cui si trova il materiale (es. da "A"
-     * a "Z", da un estremo all'altro del piano): facoltativa, utile quando un
-     * piano è largo e diviso in più punti di prelievo.
-     */
-    #[ORM\Column(length: 10, nullable: true)]
-    #[Assert\Length(max: 10)]
-    private ?string $sezione = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $note = null;
 
     public function __toString(): string
     {
-        return sprintf('%s -> %s', (string) $this->materiale, (string) $this->piano);
+        return sprintf('%s -> %s', (string) $this->materiale, (string) $this->ripiano);
     }
 
     public function getId(): ?int
@@ -60,14 +50,14 @@ class Posizionamento
         return $this;
     }
 
-    public function getPiano(): ?Piano
+    public function getRipiano(): ?Ripiano
     {
-        return $this->piano;
+        return $this->ripiano;
     }
 
-    public function setPiano(?Piano $piano): static
+    public function setRipiano(?Ripiano $ripiano): static
     {
-        $this->piano = $piano;
+        $this->ripiano = $ripiano;
 
         return $this;
     }
@@ -80,18 +70,6 @@ class Posizionamento
     public function setPrincipale(bool $principale): static
     {
         $this->principale = $principale;
-
-        return $this;
-    }
-
-    public function getSezione(): ?string
-    {
-        return $this->sezione;
-    }
-
-    public function setSezione(?string $sezione): static
-    {
-        $this->sezione = $sezione;
 
         return $this;
     }

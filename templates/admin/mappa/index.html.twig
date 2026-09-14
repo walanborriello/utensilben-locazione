@@ -1,0 +1,54 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block title %}Mappa magazzino - UtensilBen{% endblock %}
+
+{% block admin_body %}
+    <div class="ub-admin__header">
+        <h1>Mappa magazzino</h1>
+    </div>
+
+    <div class="ub-disclaimer">
+        Ogni riga è una corsia: mostra solo le sezioni che quella fila (o coppia fronte/retro) ha davvero. Il corridoio (vuoto) compare solo dove salta la "d" tra una "c" e una "e" esistenti. Le lettere a sinistra indicano le file che si affacciano sulla corsia: clicca per modificarle.
+    </div>
+
+    {% if piani is empty %}
+        <div class="ub-empty-state">Nessun piano creato. Crea prima un piano.</div>
+    {% else %}
+        <form method="get" class="ub-filters">
+            <select name="piano" onchange="this.form.submit()">
+                {% for piano in piani %}
+                    <option value="{{ piano.id }}" {{ pianoSelezionato and pianoSelezionato.id == piano.id ? 'selected' }}>{{ piano.nome }}</option>
+                {% endfor %}
+            </select>
+            <noscript><button type="submit" class="ub-btn">Mostra</button></noscript>
+        </form>
+
+        {% if corsie is empty %}
+            <div class="ub-empty-state">Nessuna fila creata su questo piano.</div>
+        {% else %}
+            <div class="ub-mappa">
+                {% for corsia in corsie %}
+                    <div class="ub-mappa__corsia">
+                        <div class="ub-mappa__etichette">
+                            {% for fila in corsia.file %}
+                                <a href="{{ path('admin_fila_edit', {id: fila.id}) }}" class="ub-mappa__fila-lettera">{{ fila.lettera }}</a>
+                            {% endfor %}
+                        </div>
+                        <div class="ub-mappa__celle">
+                            {% if corsia.celle is empty %}
+                                <span class="ub-mappa__vuota">Nessuna sezione</span>
+                            {% endif %}
+                            {% for cella in corsia.celle %}
+                                {% if cella.tipo == 'corridoio' %}
+                                    <span class="ub-mappa__gap">CORRIDOIO</span>
+                                {% else %}
+                                    <span class="ub-mappa__sezione">{{ cella.lettera }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}

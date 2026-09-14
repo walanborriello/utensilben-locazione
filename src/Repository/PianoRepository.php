@@ -19,22 +19,12 @@ class PianoRepository extends ServiceEntityRepository
     /**
      * @return Piano[]
      */
-    public function filtra(?string $q, ?int $filaId): array
+    public function filtra(?string $q): array
     {
-        $qb = $this->createQueryBuilder('p')
-            ->join('p.area', 'a')
-            ->join('a.fila', 'f')
-            ->orderBy('f.codice', 'ASC')
-            ->addOrderBy('a.lato', 'ASC')
-            ->addOrderBy('p.numero', 'ASC');
+        $qb = $this->createQueryBuilder('p')->orderBy('p.nome', 'ASC');
 
         if (null !== $q && '' !== trim($q)) {
-            $qb->andWhere('p.etichetta LIKE :q OR f.codice LIKE :q OR f.nome LIKE :q')
-                ->setParameter('q', '%'.trim($q).'%');
-        }
-
-        if (null !== $filaId) {
-            $qb->andWhere('f.id = :filaId')->setParameter('filaId', $filaId);
+            $qb->andWhere('p.nome LIKE :q')->setParameter('q', '%'.trim($q).'%');
         }
 
         return $qb->getQuery()->getResult();

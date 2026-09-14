@@ -9,19 +9,13 @@
     </div>
 
     <div class="ub-disclaimer">
-        I piani sono i singoli ripiani fisici all'interno di un'area (lato) di una fila: sono il livello più dettagliato della struttura a scaffale. Per crearne uno scegli prima l'area (fila + lato), poi assegna un numero progressivo; l'etichetta è facoltativa (es. "Piano terra").
+        I piani sono i livelli dell'edificio (es. "Terra", "Soppalco"): il livello più in alto della struttura, sopra le file. Ogni fila appartiene a un piano.
     </div>
 
     <form method="get" class="ub-filters">
-        <input type="text" name="q" value="{{ q }}" placeholder="Cerca per fila o etichetta...">
-        <select name="fila">
-            <option value="">Tutte le file</option>
-            {% for fila in file %}
-                <option value="{{ fila.id }}" {{ filaId == fila.id ? 'selected' }}>{{ fila.codice }} — {{ fila.nome }}</option>
-            {% endfor %}
-        </select>
+        <input type="text" name="q" value="{{ q }}" placeholder="Cerca per nome...">
         <button type="submit" class="ub-btn">Filtra</button>
-        {% if q or filaId %}<a href="{{ path('admin_piano_index') }}" class="ub-btn ub-btn--small">Azzera</a>{% endif %}
+        {% if q %}<a href="{{ path('admin_piano_index') }}" class="ub-btn ub-btn--small">Azzera</a>{% endif %}
     </form>
 
     {% if piani is empty %}
@@ -31,16 +25,12 @@
             {% for piano in piani %}
                 <div class="ub-card" data-ub-paginazione-item>
                     <div class="ub-card__row">
-                        <span class="ub-card__label">Area</span>
-                        <span class="ub-card__value">{{ piano.area }}</span>
+                        <span class="ub-card__label">Nome</span>
+                        <span class="ub-card__value">{{ piano.nome }}</span>
                     </div>
                     <div class="ub-card__row">
-                        <span class="ub-card__label">Numero</span>
-                        <span class="ub-card__value">{{ piano.numero }}</span>
-                    </div>
-                    <div class="ub-card__row">
-                        <span class="ub-card__label">Etichetta</span>
-                        <span class="ub-card__value">{{ piano.etichetta|default('—') }}</span>
+                        <span class="ub-card__label">File</span>
+                        <span class="ub-card__value">{{ piano.file|map(fila => fila.lettera)|join(', ')|default('—') }}</span>
                     </div>
                     <div class="ub-card__actions">
                         <a href="{{ path('admin_piano_edit', {id: piano.id}) }}" class="ub-btn ub-btn--small">Modifica</a>

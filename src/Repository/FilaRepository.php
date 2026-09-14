@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\Fila;
-use App\Enum\TipoFila;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -20,19 +19,41 @@ class FilaRepository extends ServiceEntityRepository
     /**
      * @return Fila[]
      */
-    public function filtra(?string $q, ?TipoFila $tipo): array
+    public function filtra(?string $q, ?int $pianoId): array
     {
-        $qb = $this->createQueryBuilder('f')->orderBy('f.codice', 'ASC');
+        $qb = $this->createQueryBuilder('f')
+            ->join('f.piano', 'p')->addSelect('p')
+            ->orderBy('p.nome', 'ASC')
+            ->addOrderBy('f.lettera', 'ASC');
 
         if (null !== $q && '' !== trim($q)) {
-            $qb->andWhere('f.codice LIKE :q OR f.nome LIKE :q')->setParameter('q', '%'.trim($q).'%');
+            $qb->andWhere('f.lettera LIKE :q OR p.nome LIKE :q')->setParameter('q', '%'.trim($q).'%');
         }
 
-        if (null !== $tipo) {
-            $qb->andWhere('f.tipo = :tipo')->setParameter('tipo', $tipo);
+        if (null !== $pianoId) {
+            $qb->andWhere('p.id = :pianoId')->setParameter('pianoId', $pianoId);
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * File di un piano con le rispettive sezioni già caricate (per la mappa
+     * grafica in gestione). Ordinate per lettera DESC: la mappa si legge
+     * dal fondo del magazzino (L, muro) verso l'ingresso (A).
+     *
+     * @return Fila[]
+     */
+    public function mappaPerPiano(int $pianoId): array
+    {
+        return $this->createQueryBuilder('f')
+            ->addSelect('s')
+            ->leftJoin('f.sezioni', 's')
+            ->andWhere('f.piano = :pianoId')->setParameter('pianoId', $pianoId)
+            ->orderBy('f.lettera', 'DESC')
+            ->addOrderBy('s.lettera', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -46,12 +67,12 @@ class FilaRepository extends ServiceEntityRepository
     {
         $risultati = $this->createQueryBuilder('f')
             ->select('f AS fila', 'COUNT(DISTINCT pos.materiale) AS totale')
-            ->join('f.aree', 'a')
-            ->join('a.piani', 'p')
-            ->join('p.posizionamenti', 'pos')
+            ->join('f.sezioni', 's')
+            ->join('s.ripiani', 'r')
+            ->join('r.posizionamenti', 'pos')
             ->groupBy('f.id')
             ->orderBy('totale', 'DESC')
-            ->addOrderBy('f.codice', 'ASC')
+            ->addOrderBy('f.lettera', 'ASC')
             ->getQuery()
             ->getResult();
 

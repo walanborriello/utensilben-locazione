@@ -320,6 +320,16 @@ a {
     white-space: nowrap;
 }
 
+.ub-modal__nota {
+    text-align: center;
+    font-size: 0.86rem;
+    color: var(--ub-text-muted);
+    background: var(--ub-bg);
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin: -12px 0 20px;
+}
+
 .ub-breadcrumb__chip--accento {
     background: linear-gradient(135deg, var(--ub-orange), var(--ub-orange-dark));
     color: #fff;
@@ -330,137 +340,6 @@ a {
     color: var(--ub-text-muted);
     font-size: 1rem;
     opacity: 0.7;
-}
-
-.ub-scaffale {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-bottom: 8px;
-}
-
-.ub-scaffale__colonna {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 168px;
-    max-width: 100%;
-}
-
-.ub-scaffale__lato {
-    align-self: center;
-    background: #eaf7ff;
-    color: var(--ub-blue-dark);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: .05em;
-    padding: 5px 16px;
-    border-radius: 999px;
-    box-shadow: 0 2px 4px rgba(13, 59, 87, 0.08);
-    margin-bottom: -10px;
-    z-index: 1;
-}
-
-.ub-scaffale__mobile {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(180deg, #fbfdfe, #e7f0f6);
-    border: 1px solid #cddce6;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(13, 59, 87, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    padding-top: 14px;
-    overflow: hidden;
-}
-
-.ub-scaffale__riga {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 0;
-    min-height: 44px;
-    padding: 11px 14px;
-}
-
-.ub-scaffale__riga + .ub-scaffale__riga {
-    border-top: 1px solid #d7e3ea;
-}
-
-.ub-scaffale__numero {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    background: #fff;
-    border: 1px solid #c9dbe6;
-    color: #6c8496;
-    font-size: 12px;
-    font-weight: 800;
-    border-radius: 999px;
-}
-
-.ub-scaffale__testo {
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: #4a6072;
-}
-
-.ub-scaffale__riga--evidenziato {
-    padding: 8px;
-}
-
-.ub-scaffale__scheda {
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 9px 12px;
-    background: linear-gradient(135deg, #ff8a3d, #e64e00);
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(230, 78, 0, 0.38), 0 0 0 3px rgba(254, 89, 0, 0.14);
-    animation: ub-scaffale-pop .32s ease-out;
-}
-
-.ub-scaffale__scheda-icona {
-    flex-shrink: 0;
-}
-
-.ub-scaffale__scheda-testo {
-    flex-shrink: 0;
-    font-size: 0.9rem;
-    font-weight: 800;
-    color: #ffffff;
-    white-space: nowrap;
-}
-
-.ub-scaffale__sezione {
-    flex-shrink: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    border-left: 1px solid rgba(255, 255, 255, 0.4);
-    padding-left: 7px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.88);
-    white-space: nowrap;
-}
-
-.ub-scaffale__riga--vuota {
-    min-height: 44px;
-}
-
-@keyframes ub-scaffale-pop {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 .ub-altre-posizioni {
@@ -773,7 +652,7 @@ a {
     border-radius: var(--ub-radius);
     box-shadow: var(--ub-shadow-sm);
     padding: 24px 28px;
-    max-width: 720px;
+    max-width: 900px;
 }
 
 .ub-form > div {
@@ -800,37 +679,58 @@ a {
 
 .ub-posizione-riga {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 12px;
+    flex-direction: column;
+    gap: 10px;
     padding: 14px;
     background: var(--ub-bg);
     border-radius: 10px;
     margin-bottom: 10px;
 }
 
+/* form_widget(posizioneForm) avvolge TUTTI i campi del sotto-form in un
+   unico div (quello con id="materiale_posizionamenti_N"): è quindi lui,
+   e non i singoli campi, il vero figlio diretto di .ub-posizione-riga.
+   Griglia: piano/fila/sezione/ripiano sulla prima riga, principale/note
+   sulla seconda (il bottone "Rimuovi" è un fratello di questo div, va
+   di conseguenza sotto perché .ub-posizione-riga è flex-direction:column). */
 .ub-posizione-riga > div {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(90px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+
+.ub-posizione-riga > div > div {
     margin-bottom: 0;
 }
 
-.ub-posizione-riga > div:nth-child(1) {
-    flex: 2 1 220px;
-}
-
-.ub-posizione-riga > div:nth-child(2) {
-    flex: 0 0 auto;
-}
-
-.ub-posizione-riga > div:nth-child(3) {
-    flex: 0 1 90px;
-}
-
-.ub-posizione-riga > div:nth-child(4) {
-    flex: 1 1 160px;
-}
+.ub-posizione-riga > div > div:nth-child(1) { grid-column: 1; grid-row: 1; }
+.ub-posizione-riga > div > div:nth-child(2) { grid-column: 2; grid-row: 1; }
+.ub-posizione-riga > div > div:nth-child(3) { grid-column: 3; grid-row: 1; }
+.ub-posizione-riga > div > div:nth-child(4) { grid-column: 4; grid-row: 1; }
+.ub-posizione-riga > div > div:nth-child(5) { grid-column: 1 / 3; grid-row: 2; }
+.ub-posizione-riga > div > div:nth-child(6) { grid-column: 3 / 5; grid-row: 2; }
 
 .ub-posizione-riga .ub-btn {
-    flex-shrink: 0;
+    align-self: flex-end;
+}
+
+/* Sotto i 761px le select non stanno affiancate: una colonna sola,
+   ogni campo (compreso principale/note) sulla propria riga. */
+@media (max-width: 760px) {
+    .ub-posizione-riga > div {
+        grid-template-columns: 1fr;
+    }
+
+    .ub-posizione-riga > div > div:nth-child(1),
+    .ub-posizione-riga > div > div:nth-child(2),
+    .ub-posizione-riga > div > div:nth-child(3),
+    .ub-posizione-riga > div > div:nth-child(4),
+    .ub-posizione-riga > div > div:nth-child(5),
+    .ub-posizione-riga > div > div:nth-child(6) {
+        grid-column: 1;
+        grid-row: auto;
+    }
 }
 
 /* Select2 (tutte le select del sito diventano ricercabili via JS) */
@@ -1035,17 +935,6 @@ a {
 
     .ub-modal__body {
         padding: 14px 16px 18px;
-    }
-
-    /* Con due colonne affiancate (fila "divisa") a 168px l'una non
-       ci stanno su un telefono: si riduce la colonna e si stringe lo
-       spazio tra le due, restando comunque leggibili. */
-    .ub-scaffale {
-        gap: 8px;
-    }
-
-    .ub-scaffale__colonna {
-        width: 140px;
     }
 
     .ub-filters .select2-container {
@@ -1292,4 +1181,87 @@ a {
 .ub-donut__dettaglio {
     font-size: 0.78rem;
     color: var(--ub-text-muted);
+}
+
+/* Mappa magazzino: una striscia per corsia con SOLO le sezioni che quella
+   fila (o coppia fronte/retro) ha davvero — nessuno schema fisso a-g, se
+   una fila ha solo a,b,c si disegnano solo quelle 3 celle. Letta dall'alto
+   (L, muro in fondo) verso il basso (A, ingresso). Il corridoio (vuoto) si
+   disegna solo dove salta la "d" tra una "c" e una "e" esistenti. Le
+   lettere a sinistra sono le file (fronte/retro) che si affacciano sulla
+   corsia. */
+
+.ub-mappa {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 8px 0 24px;
+    overflow-x: auto;
+}
+
+.ub-mappa__corsia {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--ub-surface);
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+
+.ub-mappa__etichette {
+    flex: 0 0 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.ub-mappa__celle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.ub-mappa__vuota {
+    font-size: 0.8rem;
+    color: var(--ub-text-muted);
+    font-style: italic;
+}
+
+.ub-mappa__sezione {
+    display: block;
+    min-width: 40px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ub-blue-dark);
+    background: #e6f5fc;
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.ub-mappa__gap {
+    display: block;
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ub-text-muted);
+    border: 1px dashed var(--ub-border);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.ub-mappa__fila-lettera {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ub-blue-dark);
+    text-decoration: none;
+}
+
+.ub-mappa__fila-lettera:hover {
+    text-decoration: underline;
 }

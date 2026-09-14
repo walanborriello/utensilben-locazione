@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Enum\TipoFila;
 use App\Repository\FilaRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,43 +10,57 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: FilaRepository::class)]
 #[ORM\Table(name: 'fila')]
-#[ORM\UniqueConstraint(name: 'uniq_fila_codice', columns: ['codice'])]
+#[ORM\UniqueConstraint(name: 'uniq_fila_piano_lettera', columns: ['piano_id', 'lettera'])]
 class Fila
 {
+    /**
+     * Lettere di fila ammesse nel magazzino reale (niente J/K).
+     */
+    public const LETTERE_VALIDE = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'L'];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(message: 'Il codice della fila è obbligatorio.')]
-    #[Assert\Length(max: 20)]
-    private ?string $codice = null;
+    #[ORM\ManyToOne(targetEntity: Piano::class, inversedBy: 'file')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Piano $piano = null;
 
-    #[ORM\Column(length: 100)]
-    #[Assert\NotBlank(message: 'Il nome della fila è obbligatorio.')]
-    #[Assert\Length(max: 100)]
-    private ?string $nome = null;
-
-    #[ORM\Column(length: 20, enumType: TipoFila::class)]
-    #[Assert\NotNull]
-    private TipoFila $tipo = TipoFila::UNICA;
+    #[ORM\Column(length: 1)]
+    #[Assert\Choice(choices: self::LETTERE_VALIDE, message: 'Lettera di fila non valida.')]
+    private ?string $lettera = null;
 
     /**
-     * @var Collection<int, Area>
+     * Prima fila del magazzino (es. "A"): un solo lato accessibile, muro
+     * dietro. Non influisce sulle sezioni generate (salta comunque la "d"
+     * come tutte le file tranne l'ultima), solo un'informazione strutturale.
      */
-    #[ORM\OneToMany(targetEntity: Area::class, mappedBy: 'fila', cascade: ['persist'], orphanRemoval: false)]
-    #[ORM\OrderBy(['lato' => 'ASC'])]
-    private Collection $aree;
+    #[ORM\Column]
+    private bool $primaFila = false;
+
+    /**
+     * Ultima fila del magazzino (es. "L"): qui il corridoio finisce, quindi
+     * a differenza di tutte le altre file ha anche la sezione "d".
+     */
+    #[ORM\Column]
+    private bool $ultimaFila = false;
+
+    /**
+     * @var Collection<int, Sezione>
+     */
+    #[ORM\OneToMany(targetEntity: Sezione::class, mappedBy: 'fila', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['lettera' => 'ASC'])]
+    private Collection $sezioni;
 
     public function __construct()
     {
-        $this->aree = new ArrayCollection();
+        $this->sezioni = new ArrayCollection();
     }
 
     public function __toString(): string
     {
-        return sprintf('%s - %s', $this->codice ?? '', $this->nome ?? '');
+        return sprintf('%s - Fila %s', (string) $this->piano, $this->lettera ?? '?');
     }
 
     public function getId(): ?int
@@ -55,56 +68,75 @@ class Fila
         return $this->id;
     }
 
-    public function getCodice(): ?string
+    public function getPiano(): ?Piano
     {
-        return $this->codice;
+        return $this->piano;
     }
 
-    public function setCodice(string $codice): static
+    public function setPiano(?Piano $piano): static
     {
-        $this->codice = $codice;
+        $this->piano = $piano;
 
         return $this;
     }
 
-    public function getNome(): ?string
+    public function getLettera(): ?string
     {
-        return $this->nome;
+        return $this->lettera;
     }
 
-    public function setNome(string $nome): static
+    public function setLettera(string $lettera): static
     {
-        $this->nome = $nome;
+        $this->lettera = $lettera;
 
         return $this;
     }
 
-    public function getTipo(): TipoFila
+    public function isPrimaFila(): bool
     {
-        return $this->tipo;
+        return $this->primaFila;
     }
 
-    public function setTipo(TipoFila $tipo): static
+    public function setPrimaFila(bool $primaFila): static
     {
-        $this->tipo = $tipo;
+        $this->primaFila = $primaFila;
+
+        return $this;
+    }
+
+    public function isUltimaFila(): bool
+    {
+        return $this->ultimaFila;
+    }
+
+    public function setUltimaFila(bool $ultimaFila): static
+    {
+        $this->ultimaFila = $ultimaFila;
 
         return $this;
     }
 
     /**
-     * @return Collection<int, Area>
+     * @return Collection<int, Sezione>
      */
-    public function getAree(): Collection
+    public function getSezioni(): Collection
     {
-        return $this->aree;
+        return $this->sezioni;
     }
 
-    public function addArea(Area $area): static
+    public function addSezione(Sezione $sezione): static
     {
-        if (!$this->aree->contains($area)) {
-            $this->aree->add($area);
-            $area->setFila($this);
+        if (!$this->sezioni->contains($sezione)) {
+            $this->sezioni->add($sezione);
+            $sezione->setFila($this);
         }
+
+        return $this;
+    }
+
+    public function removeSezione(Sezione $sezione): static
+    {
+        $this->sezioni->removeElement($sezione);
 
         return $this;
     }

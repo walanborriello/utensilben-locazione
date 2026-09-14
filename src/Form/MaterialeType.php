@@ -35,10 +35,6 @@ class MaterialeType extends AbstractType
                 'required' => false,
                 'placeholder' => 'Nessuna categoria',
             ])
-            ->add('unitaMisura', TextType::class, [
-                'label' => 'Unità di misura',
-                'required' => false,
-            ])
             ->add('attivo', CheckboxType::class, [
                 'label' => 'Attivo',
                 'required' => false,

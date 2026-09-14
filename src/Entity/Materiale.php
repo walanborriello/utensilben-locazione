@@ -36,9 +36,6 @@ class Materiale
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Categoria $categoria = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $unitaMisura = null;
-
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $immagine = null;
 
@@ -111,18 +108,6 @@ class Materiale
     public function setCategoria(?Categoria $categoria): static
     {
         $this->categoria = $categoria;
-
-        return $this;
-    }
-
-    public function getUnitaMisura(): ?string
-    {
-        return $this->unitaMisura;
-    }
-
-    public function setUnitaMisura(?string $unitaMisura): static
-    {
-        $this->unitaMisura = $unitaMisura;
 
         return $this;
     }

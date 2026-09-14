@@ -13,8 +13,8 @@ const resultsBox = document.querySelector('[data-ub-search-results]');
 const overlay = document.querySelector('[data-ub-modal-overlay]');
 const modalTitolo = document.querySelector('[data-ub-modal-titolo]');
 const modalCodice = document.querySelector('[data-ub-modal-codice]');
-const modalScaffale = document.querySelector('[data-ub-modal-scaffale]');
 const modalLabel = document.querySelector('[data-ub-modal-label]');
+const modalNota = document.querySelector('[data-ub-modal-nota]');
 const modalAltre = document.querySelector('[data-ub-modal-altre]');
 const modalAltreLista = document.querySelector('[data-ub-modal-altre-lista]');
 const closeButtons = document.querySelectorAll('[data-ub-modal-chiudi]');
@@ -111,8 +111,8 @@ function popolaModale(dati) {
 
     if (posizioniCorrenti.length === 0) {
         modalLabel.innerHTML = 'Nessuna posizione assegnata a questo materiale.';
-        modalScaffale.innerHTML = '';
         modalAltre.hidden = true;
+        modalNota.hidden = true;
         return;
     }
 
@@ -127,24 +127,26 @@ function renderPosizione(indice) {
     }
 
     modalLabel.innerHTML = costruisciBreadcrumb(posizione);
-    modalScaffale.innerHTML = costruisciScaffale(posizione.aree);
+
+    if (posizione.note) {
+        modalNota.textContent = posizione.note;
+        modalNota.hidden = false;
+    } else {
+        modalNota.hidden = true;
+    }
 }
 
 /**
- * Costruisce la fila di "pillole" sopra lo schema (Fila / Lato / Piano /
- * Sezione), con le ultime due evidenziate in arancione perché sono i due
- * dati che si ritrovano anche colorati nel disegno sotto.
+ * Costruisce la fila di "pillole" del percorso (Piano / Fila / Sezione /
+ * Ripiano), con le ultime due evidenziate in arancione.
  */
 function costruisciBreadcrumb(posizione) {
     const pezzi = [
-        { testo: `Fila ${posizione.fila.codice}`, accento: false },
-        { testo: posizione.areaCorrente.latoLabel, accento: false },
-        { testo: `Piano ${posizione.pianoCorrente.numero}`, accento: true },
+        { testo: posizione.piano.nome, accento: false },
+        { testo: `Fila ${posizione.fila.lettera}`, accento: false },
+        { testo: `Sezione ${posizione.sezione.lettera}`, accento: true },
+        { testo: `Ripiano ${posizione.ripiano.numero}`, accento: true },
     ];
-
-    if (posizione.sezione) {
-        pezzi.push({ testo: `Sezione ${posizione.sezione}`, accento: true });
-    }
 
     return pezzi
         .map((pezzo, indice) => {
@@ -170,8 +172,7 @@ function renderChipAltrePosizioni() {
         chip.type = 'button';
         chip.className = 'ub-chip';
         chip.setAttribute('aria-pressed', indice === 0 ? 'true' : 'false');
-        const sezioneChip = posizione.sezione ? ` · Sezione ${escapeHtml(posizione.sezione)}` : '';
-        chip.innerHTML = `${posizione.principale ? '<span class="ub-chip__stella">★</span> ' : ''}Fila ${escapeHtml(posizione.fila.codice)} · ${escapeHtml(posizione.areaCorrente.latoLabel)} · Piano ${posizione.pianoCorrente.numero}${sezioneChip}`;
+        chip.innerHTML = `${posizione.principale ? '<span class="ub-chip__stella">★</span> ' : ''}${escapeHtml(posizione.piano.nome)} · Fila ${escapeHtml(posizione.fila.lettera)} · Sezione ${escapeHtml(posizione.sezione.lettera)} · Ripiano ${posizione.ripiano.numero}`;
         chip.addEventListener('click', () => {
             modalAltreLista.querySelectorAll('.ub-chip').forEach((c) => c.setAttribute('aria-pressed', 'false'));
             chip.setAttribute('aria-pressed', 'true');
@@ -179,67 +180,6 @@ function renderChipAltrePosizioni() {
         });
         modalAltreLista.appendChild(chip);
     });
-}
-
-/**
- * Percorso di un'icona a goccia (segnaposto), viewBox 0 0 24 24, riusato per
- * marcare il vano trovato nello schema dello scaffale.
- */
-const UB_ICONA_SEGNAPOSTO = 'M12 2C7.6 2 4 5.6 4 10c0 5.5 6.5 11.3 7.1 11.8.5.5 1.3.5 1.8 0C13.5 21.3 20 15.5 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z';
-
-/**
- * Costruisce lo schema dello scaffale in stile "mobile con vani": una
- * colonna per area (una sola se la fila e' "unica", due affiancate se e'
- * "divisa"), i piani impilati dall'alto in basso come in un mobile reale, e
- * il vano giusto evidenziato con una scheda arancione con segnaposto ed
- * eventuale sezione — cosi' da distinguere a colpo d'occhio i vani vuoti da
- * quello cercato.
- *
- * E' HTML/CSS piano, non SVG: ogni riga e' un normale div con flexbox, quindi
- * si centra da solo senza bisogno di calcolare coordinate a mano.
- */
-function costruisciScaffale(aree) {
-    // Se una colonna ha meno piani delle altre, le mancano dei vani in cima
-    // (i piani reali sono allineati in basso): aggiungiamo righe vuote sopra,
-    // cosi' tutte le colonne restano alte uguali invece di accorciarsi.
-    const righeMax = Math.max(...aree.map((area) => area.piani.length));
-
-    return aree
-        .map((area) => {
-            const piani = [...area.piani].sort((a, b) => b.numero - a.numero);
-            const righeVuote = '<div class="ub-scaffale__riga ub-scaffale__riga--vuota"></div>'.repeat(righeMax - piani.length);
-            const righe = piani.map((piano) => costruisciRigaScaffale(piano)).join('');
-
-            return `
-                <div class="ub-scaffale__colonna">
-                    <span class="ub-scaffale__lato">${escapeHtml(area.latoLabel.toUpperCase())}</span>
-                    <div class="ub-scaffale__mobile">${righeVuote}${righe}</div>
-                </div>`;
-        })
-        .join('');
-}
-
-function costruisciRigaScaffale(piano) {
-    if (!piano.evidenziato) {
-        return `
-            <div class="ub-scaffale__riga">
-                <span class="ub-scaffale__numero">${piano.numero}</span>
-                <span class="ub-scaffale__testo">Piano ${piano.numero}${piano.etichetta ? ' · ' + escapeHtml(piano.etichetta) : ''}</span>
-            </div>`;
-    }
-
-    const sezioneHtml = piano.sezione
-        ? `<span class="ub-scaffale__sezione">Sez. ${escapeHtml(piano.sezione)}</span>`
-        : '';
-
-    return `
-        <div class="ub-scaffale__riga ub-scaffale__riga--evidenziato">
-            <div class="ub-scaffale__scheda">
-                <svg class="ub-scaffale__scheda-icona" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="${UB_ICONA_SEGNAPOSTO}" fill="#ffffff" /></svg>
-                <span class="ub-scaffale__scheda-testo">Piano ${piano.numero}</span>
-                ${sezioneHtml}
-            </div>
-        </div>`;
 }
 
 function chiudiModale() {
@@ -308,6 +248,7 @@ document.querySelectorAll('[data-collezione-wrapper]').forEach((wrapper) => {
             + '<button type="button" class="ub-btn ub-btn--small ub-btn--danger" data-collezione-rimuovi>Rimuovi</button>';
         lista.appendChild(riga);
         attivaRimozione(riga);
+        inizializzaCascataPosizione(riga);
         inizializzaSelect2(riga.querySelectorAll('select'));
         indice++;
     });
@@ -322,6 +263,86 @@ function inizializzaSelect2(selects) {
     $(selects).select2({ width: '100%' });
 }
 
+/**
+ * Le 4 select "piano/fila/sezione/ripiano" di una riga posizione sono a
+ * cascata: piano e fila e sezione sono select finte (non mappate
+ * sull'entità, servono solo a restringere le opzioni), solo "ripiano" viene
+ * davvero salvato. I dati di tutta la gerarchia sono già negli <option> resi
+ * da Symfony (via choice_attr: data-piano-id/data-fila-id/data-sezione-id),
+ * niente bisogno di un'altra chiamata al server.
+ */
+function opzioniComplete(select) {
+    if (!select._opzioniComplete) {
+        select._opzioniComplete = Array.from(select.options).map((opzione) => opzione.cloneNode(true));
+    }
+    return select._opzioniComplete;
+}
+
+function popolaSelect(select, opzioni, valoreSelezionato) {
+    const eraSelect2 = $(select).hasClass('select2-hidden-accessible');
+    if (eraSelect2) {
+        $(select).select2('destroy');
+    }
+    select.innerHTML = '';
+    opzioni.forEach((opzione) => select.appendChild(opzione.cloneNode(true)));
+    select.value = valoreSelezionato ?? '';
+    if (eraSelect2) {
+        inizializzaSelect2(select);
+    }
+}
+
+function filtraOpzioni(opzioni, attributo, valore) {
+    const placeholder = opzioni.filter((opzione) => opzione.value === '');
+    if (!valore) {
+        return placeholder;
+    }
+
+    return [...placeholder, ...opzioni.filter((opzione) => opzione.dataset[attributo] === valore)];
+}
+
+function inizializzaCascataPosizione(riga) {
+    const selectPiano = riga.querySelector('select[name$="[piano]"]');
+    const selectFila = riga.querySelector('select[name$="[fila]"]');
+    const selectSezione = riga.querySelector('select[name$="[sezione]"]');
+    const selectRipiano = riga.querySelector('select[name$="[ripiano]"]');
+
+    if (!selectPiano || !selectFila || !selectSezione || !selectRipiano) {
+        return;
+    }
+
+    const tutteFila = opzioniComplete(selectFila);
+    const tutteSezione = opzioniComplete(selectSezione);
+    const tutteRipiano = opzioniComplete(selectRipiano);
+
+    // Se la riga arriva già valorizzata (modifica di un prodotto esistente),
+    // "ripiano" ha già l'opzione giusta: risaliamo la gerarchia dai suoi
+    // data-* per preselezionare piano/fila/sezione, che sono select finte e
+    // Symfony non le valorizza da sé.
+    const ripianoIniziale = tutteRipiano.find((opzione) => opzione.value === selectRipiano.value && opzione.value !== '');
+
+    selectPiano.value = ripianoIniziale?.dataset.pianoId ?? '';
+    popolaSelect(selectFila, filtraOpzioni(tutteFila, 'pianoId', selectPiano.value || null), ripianoIniziale?.dataset.filaId);
+    popolaSelect(selectSezione, filtraOpzioni(tutteSezione, 'filaId', selectFila.value || null), ripianoIniziale?.dataset.sezioneId);
+    popolaSelect(selectRipiano, filtraOpzioni(tutteRipiano, 'sezioneId', selectSezione.value || null), selectRipiano.value);
+
+    // Select2 cambia il valore del <select> chiamando $(...).trigger('change')
+    // via jQuery: non genera un evento nativo che un addEventListener('change')
+    // possa intercettare. Bisogna quindi agganciarsi con $(...).on('change').
+    $(selectPiano).on('change', () => {
+        popolaSelect(selectFila, filtraOpzioni(tutteFila, 'pianoId', selectPiano.value || null), null);
+        popolaSelect(selectSezione, filtraOpzioni(tutteSezione, 'filaId', null), null);
+        popolaSelect(selectRipiano, filtraOpzioni(tutteRipiano, 'sezioneId', null), null);
+    });
+    $(selectFila).on('change', () => {
+        popolaSelect(selectSezione, filtraOpzioni(tutteSezione, 'filaId', selectFila.value || null), null);
+        popolaSelect(selectRipiano, filtraOpzioni(tutteRipiano, 'sezioneId', null), null);
+    });
+    $(selectSezione).on('change', () => {
+        popolaSelect(selectRipiano, filtraOpzioni(tutteRipiano, 'sezioneId', selectSezione.value || null), null);
+    });
+}
+
+document.querySelectorAll('.ub-posizione-riga').forEach(inizializzaCascataPosizione);
 inizializzaSelect2(document.querySelectorAll('select'));
 
 /**

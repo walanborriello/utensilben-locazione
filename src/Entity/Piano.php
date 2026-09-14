@@ -8,9 +8,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Piano dell'edificio (es. "Terra", "Soppalco") — il livello più alto della
+ * struttura del magazzino, sopra la Fila.
+ */
 #[ORM\Entity(repositoryClass: PianoRepository::class)]
 #[ORM\Table(name: 'piano')]
-#[ORM\UniqueConstraint(name: 'uniq_piano_area_numero', columns: ['area_id', 'numero'])]
+#[ORM\UniqueConstraint(name: 'uniq_piano_nome', columns: ['nome'])]
 class Piano
 {
     #[ORM\Id]
@@ -18,34 +22,26 @@ class Piano
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Area::class, inversedBy: 'piani')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?Area $area = null;
-
-    #[ORM\Column]
-    #[Assert\NotNull]
-    #[Assert\Positive(message: 'Il numero del piano deve essere maggiore di zero.')]
-    private ?int $numero = null;
-
-    #[ORM\Column(length: 100, nullable: true)]
-    private ?string $etichetta = null;
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Il nome del piano è obbligatorio.')]
+    #[Assert\Length(max: 100)]
+    private ?string $nome = null;
 
     /**
-     * @var Collection<int, Posizionamento>
+     * @var Collection<int, Fila>
      */
-    #[ORM\OneToMany(targetEntity: Posizionamento::class, mappedBy: 'piano', orphanRemoval: true)]
-    private Collection $posizionamenti;
+    #[ORM\OneToMany(targetEntity: Fila::class, mappedBy: 'piano', cascade: ['persist'])]
+    #[ORM\OrderBy(['lettera' => 'ASC'])]
+    private Collection $file;
 
     public function __construct()
     {
-        $this->posizionamenti = new ArrayCollection();
+        $this->file = new ArrayCollection();
     }
 
     public function __toString(): string
     {
-        $area = (string) $this->area;
-
-        return sprintf('%s - Piano %s', $area, $this->numero ?? '?');
+        return $this->nome ?? '';
     }
 
     public function getId(): ?int
@@ -53,47 +49,33 @@ class Piano
         return $this->id;
     }
 
-    public function getArea(): ?Area
+    public function getNome(): ?string
     {
-        return $this->area;
+        return $this->nome;
     }
 
-    public function setArea(?Area $area): static
+    public function setNome(string $nome): static
     {
-        $this->area = $area;
-
-        return $this;
-    }
-
-    public function getNumero(): ?int
-    {
-        return $this->numero;
-    }
-
-    public function setNumero(int $numero): static
-    {
-        $this->numero = $numero;
-
-        return $this;
-    }
-
-    public function getEtichetta(): ?string
-    {
-        return $this->etichetta;
-    }
-
-    public function setEtichetta(?string $etichetta): static
-    {
-        $this->etichetta = $etichetta;
+        $this->nome = $nome;
 
         return $this;
     }
 
     /**
-     * @return Collection<int, Posizionamento>
+     * @return Collection<int, Fila>
      */
-    public function getPosizionamenti(): Collection
+    public function getFile(): Collection
     {
-        return $this->posizionamenti;
+        return $this->file;
+    }
+
+    public function addFila(Fila $fila): static
+    {
+        if (!$this->file->contains($fila)) {
+            $this->file->add($fila);
+            $fila->setPiano($this);
+        }
+
+        return $this;
     }
 }

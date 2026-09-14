@@ -4,7 +4,6 @@ namespace App\Controller\Admin;
 
 use App\Entity\Piano;
 use App\Form\PianoType;
-use App\Repository\FilaRepository;
 use App\Repository\PianoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,16 +15,13 @@ use Symfony\Component\Routing\Attribute\Route;
 class PianoController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(Request $request, PianoRepository $pianoRepository, FilaRepository $filaRepository): Response
+    public function index(Request $request, PianoRepository $pianoRepository): Response
     {
         $q = $request->query->get('q');
-        $filaId = $request->query->get('fila') ? (int) $request->query->get('fila') : null;
 
         return $this->render('admin/piano/index.html.twig', [
-            'piani' => $pianoRepository->filtra($q, $filaId),
-            'file' => $filaRepository->findBy([], ['codice' => 'ASC']),
+            'piani' => $pianoRepository->filtra($q),
             'q' => $q,
-            'filaId' => $filaId,
         ]);
     }
 

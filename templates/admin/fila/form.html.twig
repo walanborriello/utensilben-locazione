@@ -8,7 +8,12 @@
     </div>
 
     {{ form_start(form, {attr: {class: 'ub-form'}}) }}
-        {{ form_widget(form) }}
+        {{ form_row(form.piano) }}
+        {{ form_row(form.lettera) }}
+        {{ form_row(form.primaFila) }}
+        {{ form_row(form.ultimaFila) }}
+        {{ form_row(form.sezioniTesto) }}
+
         <div class="ub-form__actions">
             <button type="submit" class="ub-btn ub-btn--primary">Salva</button>
             <a href="{{ path('admin_fila_index') }}" class="ub-btn">Annulla</a>

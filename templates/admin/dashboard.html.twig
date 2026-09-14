@@ -5,7 +5,7 @@
 {% block admin_body %}
     <h1>Gestione</h1>
     <div class="ub-disclaimer">
-        Da qui gestisci tutta la struttura del magazzino e il catalogo prodotti. Scegli una sezione dal menu a sinistra: <strong>Categorie</strong> (raggruppano i prodotti), <strong>File</strong> e <strong>Piani</strong> (la struttura fisica degli scaffali) e <strong>Prodotti</strong> (anagrafica e posizioni sullo scaffale, tutto nello stesso form). Sotto trovi una fotografia rapida della situazione attuale.
+        Da qui gestisci tutta la struttura del magazzino e il catalogo prodotti. Scegli una sezione dal menu a sinistra: <strong>Categorie</strong> (raggruppano i prodotti), <strong>Piani</strong> (i livelli dell'edificio, es. Terra/Soppalco), <strong>File</strong> (le lettere A-L, con sezioni e ripiani generati automaticamente) e <strong>Prodotti</strong> (anagrafica e posizioni sullo scaffale, tutto nello stesso form). Sotto trovi una fotografia rapida della situazione attuale.
     </div>
 
     <div class="ub-stats">
@@ -46,7 +46,7 @@
                 <div class="ub-bars">
                     {% for riga in materialiPerFila %}
                         <div class="ub-bar-row">
-                            <span class="ub-bar-row__etichetta">{{ riga.fila.codice }} — {{ riga.fila.nome }}</span>
+                            <span class="ub-bar-row__etichetta">{{ riga.fila.piano.nome }} — Fila {{ riga.fila.lettera }}</span>
                             <div class="ub-bar-row__traccia">
                                 <div class="ub-bar-row__barra" style="width: {{ massimoPerFila > 0 ? (riga.totale / massimoPerFila * 100) : 0 }}%"></div>
                             </div>

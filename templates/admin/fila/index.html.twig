@@ -9,19 +9,19 @@
     </div>
 
     <div class="ub-disclaimer">
-        Le file rappresentano gli scaffali fisici del magazzino. Per ognuna scegli se è "unica" (un solo lato) o "divisa" (lato sinistro e destro): al salvataggio vengono generate automaticamente le aree corrispondenti, che non si creano mai a mano. Le aree generate compaiono nella scheda di ogni fila.
+        Ogni fila è una lettera (A-L, niente J/K) su un piano dell'edificio. Al salvataggio vengono generate automaticamente le sezioni (a,b,c,e,f,g — la "d" solo per l'ultima fila, dove il corridoio finisce) e i 4 ripiani di ciascuna: non si creano mai a mano.
     </div>
 
     <form method="get" class="ub-filters">
-        <input type="text" name="q" value="{{ q }}" placeholder="Cerca per codice o nome...">
-        <select name="tipo">
-            <option value="">Tutti i tipi</option>
-            {% for tipo in tipiFila %}
-                <option value="{{ tipo.value }}" {{ tipoParam == tipo.value ? 'selected' }}>{{ tipo.label }}</option>
+        <input type="text" name="q" value="{{ q }}" placeholder="Cerca per lettera o piano...">
+        <select name="piano">
+            <option value="">Tutti i piani</option>
+            {% for piano in piani %}
+                <option value="{{ piano.id }}" {{ pianoId == piano.id ? 'selected' }}>{{ piano.nome }}</option>
             {% endfor %}
         </select>
         <button type="submit" class="ub-btn">Filtra</button>
-        {% if q or tipoParam %}<a href="{{ path('admin_fila_index') }}" class="ub-btn ub-btn--small">Azzera</a>{% endif %}
+        {% if q or pianoId %}<a href="{{ path('admin_fila_index') }}" class="ub-btn ub-btn--small">Azzera</a>{% endif %}
     </form>
 
     {% if file is empty %}
@@ -31,20 +31,22 @@
             {% for fila in file %}
                 <div class="ub-card" data-ub-paginazione-item>
                     <div class="ub-card__row">
-                        <span class="ub-card__label">Codice</span>
-                        <span class="ub-card__value">{{ fila.codice }}</span>
+                        <span class="ub-card__label">Piano</span>
+                        <span class="ub-card__value">{{ fila.piano }}</span>
                     </div>
                     <div class="ub-card__row">
-                        <span class="ub-card__label">Nome</span>
-                        <span class="ub-card__value">{{ fila.nome }}</span>
+                        <span class="ub-card__label">Lettera</span>
+                        <span class="ub-card__value"><span class="ub-badge">{{ fila.lettera }}</span></span>
                     </div>
+                    {% if fila.primaFila or fila.ultimaFila %}
+                        <div class="ub-card__row">
+                            <span class="ub-card__label">Note</span>
+                            <span class="ub-card__value">{{ fila.primaFila ? 'Prima fila' : 'Ultima fila' }}</span>
+                        </div>
+                    {% endif %}
                     <div class="ub-card__row">
-                        <span class="ub-card__label">Tipo</span>
-                        <span class="ub-card__value"><span class="ub-badge">{{ fila.tipo.label }}</span></span>
-                    </div>
-                    <div class="ub-card__row">
-                        <span class="ub-card__label">Aree generate</span>
-                        <span class="ub-card__value">{{ fila.aree|map(area => area.lato.labelBreve)|join(', ')|default('—') }}</span>
+                        <span class="ub-card__label">Sezioni</span>
+                        <span class="ub-card__value">{{ fila.sezioni|map(sezione => sezione.lettera)|join(', ')|default('—') }}</span>
                     </div>
                     <div class="ub-card__actions">
                         <a href="{{ path('admin_fila_edit', {id: fila.id}) }}" class="ub-btn ub-btn--small">Modifica</a>
